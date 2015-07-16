@@ -50,9 +50,10 @@ class TestExampleAppHStore(AuthenticatedAPITestCase):
         token = request.data.get('token', None)
         self.assertIsNotNone(
             token, "Could not receive authentication token on login post.")
-        self.assertEqual(request.status_code, 200,
-                         "Status code on /api/token-auth was %s (should be 200)."
-                         % request.status_code)
+        self.assertEqual(
+            request.status_code, 200,
+            "Status code on /api/token-auth was %s (should be 200)."
+            % request.status_code)
 
     def test_create_project_data(self):
         post_data = {
