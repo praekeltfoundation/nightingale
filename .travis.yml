@@ -1,0 +1,22 @@
+language: python
+
+python:
+  - "2.7"
+  - "3.4"
+
+services:
+  - postgresql
+  - redis
+
+# command to install requirements
+install:
+  - pip install -r requirements.txt --use-mirrors
+  - pip install -r requirements-dev.txt --use-mirrors
+
+before_script:
+  - psql template1 -c 'create extension hstore;'
+
+# command to run tests, e.g. python setup.py test
+script:
+  - "py.test --ds=nightingale.testsettings ./*/tests.py --cov=nightingale"
+  - "flake8 ."
