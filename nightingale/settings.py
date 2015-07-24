@@ -49,6 +49,7 @@ INSTALLED_APPS = (
     'django_filters',
     # us
     'accounts',
+    'reports',
 
 )
 
@@ -106,6 +107,8 @@ STATIC_URL = '/static/'
 # TEMPLATE_CONTEXT_PROCESSORS = (
 #     "django.core.context_processors.request",
 # )
+
+GRAPPELLI_ADMIN_TITLE = "NIGHTINGALE"
 
 # Sentry configuration
 RAVEN_CONFIG = {
