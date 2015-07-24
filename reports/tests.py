@@ -85,6 +85,18 @@ class TestReportsAPI(AuthenticatedAPITestCase):
         self.assertEqual(d.order, 2)
         self.assertEqual(d.metadata, {'a': 'a', 'b': '2'})
 
+    def test_create_category_data_denied_normaluser(self):
+        post_data = {
+            "name": "Test Category",
+            "order": 2,
+            "metadata": {'a': 'a', 'b': 2}
+        }
+        response = self.normalclient.post('/api/v1/sys/categories/',
+                                          json.dumps(post_data),
+                                          content_type='application/json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_create_project_categories_data(self):
         project = self.make_user_project()
         category1 = self.make_category(name="Test Cat 1", order=3)
