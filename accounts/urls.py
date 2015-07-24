@@ -11,5 +11,5 @@ router.register(r'userprojects', views.UserProjectViewSet)
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browseable API.
 urlpatterns = [
-    url(r'^', include(router.urls)),
+    url(r'^sys/', include(router.urls)),
 ]
