@@ -34,7 +34,8 @@ class FilteredCategoriesList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         userprojects = UserProject.objects.get(user=self.request.user)
-        queryset = ProjectCategory.objects.filter(project__in=userprojects.projects.all())
+        queryset = ProjectCategory.objects.filter(
+            project__in=userprojects.projects.all())
         return queryset
 
     def list(self, request):

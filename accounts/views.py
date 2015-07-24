@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User, Group
 from .models import Project, UserProject
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAdminUser
 from .serializers import (UserSerializer, GroupSerializer,
                           ProjectSerializer, UserProjectSerializer)
 
