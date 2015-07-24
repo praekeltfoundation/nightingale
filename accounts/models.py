@@ -27,7 +27,7 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):  # __unicode__ on Python 2
-        return str(self.id)
+        return str(self.name)
 
 
 class UserProject(models.Model):

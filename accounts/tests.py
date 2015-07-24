@@ -22,15 +22,15 @@ class AuthenticatedAPITestCase(APITestCase):
         super(AuthenticatedAPITestCase, self).setUp()
         self.username = 'testuser'
         self.password = 'testpass'
-        self.user = User.objects.create_user(self.username,
-                                             'testuser@example.com',
-                                             self.password)
+        self.user = User.objects.create_superuser(self.username,
+                                                  'testuser@example.com',
+                                                  self.password)
         token = Token.objects.create(user=self.user)
         self.token = token.key
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token)
 
 
-class TestExampleAppHStore(AuthenticatedAPITestCase):
+class TestAccountsAPI(AuthenticatedAPITestCase):
 
     def make_project(self, code="testproject", name="Test Project"):
         post_data = {
@@ -38,7 +38,7 @@ class TestExampleAppHStore(AuthenticatedAPITestCase):
             "name": name,
             "metadata": {'a': 'a', 'b': 2}
         }
-        response = self.client.post('/api/v1/projects/',
+        response = self.client.post('/api/v1/sys/projects/',
                                     json.dumps(post_data),
                                     content_type='application/json')
         return response.data["id"]
@@ -61,7 +61,7 @@ class TestExampleAppHStore(AuthenticatedAPITestCase):
             "name": "Test Project",
             "metadata": {'a': 'a', 'b': 2}
         }
-        response = self.client.post('/api/v1/projects/',
+        response = self.client.post('/api/v1/sys/projects/',
                                     json.dumps(post_data),
                                     content_type='application/json')
 
@@ -77,11 +77,11 @@ class TestExampleAppHStore(AuthenticatedAPITestCase):
         project2 = self.make_project(code="test2", name="Test 2")
         self.make_project(code="test3", name="Test 3")
         post_data = {
-            "user": "/api/v1/users/%s/" % self.user.id,
-            "projects": ["/api/v1/projects/%s/" % project1,
-                         "/api/v1/projects/%s/" % project2]
+            "user": "/api/v1/sys/users/%s/" % self.user.id,
+            "projects": ["/api/v1/sys/projects/%s/" % project1,
+                         "/api/v1/sys/projects/%s/" % project2]
         }
-        response = self.client.post('/api/v1/userprojects/',
+        response = self.client.post('/api/v1/sys/userprojects/',
                                     json.dumps(post_data),
                                     content_type='application/json')
 
