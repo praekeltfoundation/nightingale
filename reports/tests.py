@@ -1,6 +1,6 @@
 import json
 import pytz
-from datetime import datetime, timezone
+from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.test import TestCase
