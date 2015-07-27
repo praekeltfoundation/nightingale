@@ -1,4 +1,5 @@
 import json
+import pytz
 from datetime import datetime, timezone
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
@@ -195,7 +196,7 @@ class TestReportsAPI(AuthenticatedAPITestCase):
         self.assertEqual(d.location.point, location1)
         self.assertEqual(d.description, 'Test incident')
         self.assertEqual(d.incident_at, datetime(2015, 2, 2, 7, 10,
-                                                 tzinfo=timezone.utc))
+                                                 tzinfo=pytz.utc))
 
     def test_create_report_data_normalclient(self):
         self.make_user_project()
