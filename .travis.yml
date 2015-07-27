@@ -14,7 +14,7 @@ install:
   - pip install -r requirements-dev.txt --use-mirrors
 
 before_script:
-  - psql template1 -c 'create extension hstore;'
+  - psql template1 -c 'CREATE EXTENSION hstore;CREATE EXTENSION postgis;CREATE EXTENSION postgis_topology;'
 
 # command to run tests, e.g. python setup.py test
 script:
