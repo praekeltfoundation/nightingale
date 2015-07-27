@@ -1,44 +1,52 @@
 import uuid
 
 from django.contrib.postgres.fields import HStoreField
-from django.contrib.auth.models import User
 from django.db import models
+from accounts.models import Project
 
 
-class Project(models.Model):
+class Category(models.Model):
 
     """
-    Projects collecting reports
-
-    :param str code:
-        Short name for the project. E.g. 'SHOUTZA'.
+    Categories reports can me made against
 
     :param str name:
         Long description. E.g. 'Shout South Africa'.
 
+    :param int order:
+        Optional sort order for UI
+
     :param dict metadata:
         A hstore field for unstructured project information.
+
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    code = models.CharField(max_length=20)
     name = models.CharField(max_length=100)
+    order = models.IntegerField(default=1000)
     metadata = HStoreField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name_plural = "categories"
 
     def __str__(self):  # __unicode__ on Python 2
         return str(self.name)
 
 
-class UserProject(models.Model):
+class ProjectCategory(models.Model):
 
     """
-    Projects a User has access to
+    Categories a Project can report on
     """
-    user = models.OneToOneField(User)
-    projects = models.ManyToManyField(Project)
+    project = models.OneToOneField(Project)
+    categories = models.ManyToManyField(Category)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name_plural = "project categories"
+
     def __str__(self):  # __unicode__ on Python 2
-        return str(self.user.username)
+        return "%s Categories" % str(self.project.code)
