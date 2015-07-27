@@ -226,4 +226,4 @@ class TestReportsAPI(AuthenticatedAPITestCase):
         self.assertEqual(d.location.point, location1)
         self.assertEqual(d.description, 'Test incident')
         self.assertEqual(d.incident_at, datetime(2015, 2, 2, 7, 10,
-                                                 tzinfo=timezone.utc))
+                                                 tzinfo=pytz.utc))
