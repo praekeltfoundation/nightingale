@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from .models import Category, ProjectCategory, Report, Location
-from accounts.models import UserProject
 
 
 class CategorySerializer(serializers.HyperlinkedModelSerializer):
