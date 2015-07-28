@@ -41,11 +41,13 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     # 3rd party
     'django_hstore',
     'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_gis',
     'django_filters',
     # us
     'accounts',
@@ -75,7 +77,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get(
             'NIGHTINGALE_DATABASE',
-            'postgres://postgres:@localhost/nightingale')),
+            'postgis://postgres:@localhost/nightingale')),
 }
 
 
