@@ -32,13 +32,18 @@ class ReportSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Report
-        fields = ('url', 'id', 'contact_key', 'to_addr', 'category', 'project',
-                  'location', 'description', 'incident_at', 'metadata')
+        fields = ('url', 'id', 'contact_key', 'to_addr', 'categories',
+                  'project', 'location', 'description', 'incident_at',
+                  'metadata')
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')
         loc = Location.objects.create(**location_data)
+        categories = validated_data.pop('categories')
         report = Report.objects.create(location=loc, **validated_data)
+        for category in categories:
+            report.categories.add(category)
+        report.save()
         return report
 
 
@@ -70,11 +75,15 @@ class ReportUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ('id', 'contact_key', 'to_addr', 'category', 'project',
+        fields = ('id', 'contact_key', 'to_addr', 'categories', 'project',
                   'location', 'description', 'incident_at', 'metadata')
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')
         loc = Location.objects.create(**location_data)
+        categories = validated_data.pop('categories')
         report = Report.objects.create(location=loc, **validated_data)
+        for category in categories:
+            report.categories.add(category)
+        report.save()
         return report
