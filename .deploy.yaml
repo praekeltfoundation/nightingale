@@ -9,3 +9,4 @@ dependencies:
  - postgresql
  - postgis
  - postgresql-9.3-postgis-scripts
+virtualenv_prefix: nightingale
