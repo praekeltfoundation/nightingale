@@ -105,9 +105,7 @@ class Report(models.Model):
     """
     contact_key = models.CharField(max_length=36, null=False, blank=False)
     to_addr = models.CharField(max_length=255, null=False, blank=False)
-    category = models.ForeignKey(Category,
-                                 related_name='reports',
-                                 null=False)
+    categories = models.ManyToManyField(Category)
     project = models.ForeignKey(Project,
                                 related_name='reports',
                                 null=True)
@@ -115,11 +113,11 @@ class Report(models.Model):
                                  related_name='reports',
                                  null=False)
     description = models.TextField(null=True, blank=True)
-    incident_at = models.DateTimeField(null=True)
+    incident_at = models.DateTimeField(null=True, blank=True)
     metadata = HStoreField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "Incident of %s reported at %s" % (
-            self.category.name, self.created_at)
+        return "Incident for %s reported at %s" % (
+            self.project.name, self.created_at)

@@ -14,5 +14,7 @@ urlpatterns = [
     url('^category/$',
         views.FilteredCategoriesList.as_view()),
     url(r'^category/(?P<pk>.+)/', views.CategoryItemViewSet.as_view()),
+    url(r'^report/(?P<pk>.+)/', views.ReportPatch.as_view()),
     url(r'^report/', views.ReportPost.as_view()),
+
 ]
