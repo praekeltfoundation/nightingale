@@ -228,3 +228,33 @@ class TestReportsAPI(AuthenticatedAPITestCase):
         self.assertEqual(d.description, 'Test incident')
         self.assertEqual(d.incident_at, datetime(2015, 2, 2, 7, 10,
                                                  tzinfo=pytz.utc))
+
+    def test_update_report_data_normalclient(self):
+        self.make_user_project()
+        category1 = self.make_category(name="Test Cat 1", order=1)
+        category2 = self.make_category(name="Test Cat 2", order=1)
+        post_data = {
+            "contact_key": "579ed9e9c0554eeca149d7fccd9b54e5",
+            "to_addr": "+27845001001",
+            "categories": [category1, category2],
+            "location": self.make_location(18.0000000, -33.0000000),
+            "incident_at": "2015-02-02 07:10"
+
+        }
+        # Post user request without description
+        response = self.normalclient.post('/api/v1/report/',
+                                          json.dumps(post_data),
+                                          content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        rid = response.data["id"]
+
+        patch_data = {
+            "description": "Added after"
+        }
+        # Post user request without description
+        response2 = self.normalclient.patch('/api/v1/report/%s/' % rid,
+                                            json.dumps(patch_data),
+                                            content_type='application/json')
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+        d = Report.objects.last()
+        self.assertEqual(d.description, 'Added after')

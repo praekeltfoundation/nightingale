@@ -68,7 +68,7 @@ class CategoryItemViewSet(generics.RetrieveAPIView):
     serializer_class = CategorySimpleSerializer
 
 
-class ReportPost(mixins.CreateModelMixin, generics.GenericAPIView):
+class ReportPost(mixins.CreateModelMixin,  generics.GenericAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = Report.objects.all()
     serializer_class = ReportUserSerializer
@@ -79,3 +79,12 @@ class ReportPost(mixins.CreateModelMixin, generics.GenericAPIView):
         project = userprojects.projects.all()[0]
         request.data["project"] = project.id
         return self.create(request, *args, **kwargs)
+
+
+class ReportPatch(mixins.UpdateModelMixin,  generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = Report.objects.all()
+    serializer_class = ReportUserSerializer
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
