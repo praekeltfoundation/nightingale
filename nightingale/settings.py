@@ -52,7 +52,7 @@ INSTALLED_APPS = (
     # us
     'accounts',
     'reports',
-
+    'snappy',
 )
 
 MIDDLEWARE_CLASSES = (

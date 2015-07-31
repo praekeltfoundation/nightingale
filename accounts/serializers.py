@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User, Group
-from .models import Project, UserProject
+from .models import Project, UserProject, Integration
 from rest_framework import serializers
 
 
@@ -29,3 +29,11 @@ class UserProjectSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = UserProject
         fields = ('url', 'user', 'projects')
+
+
+class IntegrationSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = Integration
+        fields = ('url', 'id', 'project', 'integration_type',
+                  'details', 'active')

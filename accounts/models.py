@@ -64,6 +64,7 @@ class Integration(models.Model):
     INTEGRATION_TYPES = (
         ('Snappy', 'Snappy'),
         ('Ona', 'Ona'),
+        ('Vumi', 'Vumi'),
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     project = models.ForeignKey(Project,
