@@ -114,7 +114,7 @@ class Report(models.Model):
                                  null=False)
     description = models.TextField(null=True, blank=True)
     incident_at = models.DateTimeField(null=True, blank=True)
-    metadata = HStoreField(null=True, blank=True)
+    metadata = HStoreField(null=True, blank=True, default={})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

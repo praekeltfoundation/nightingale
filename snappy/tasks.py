@@ -74,7 +74,7 @@ class Send_Message(Task):
                     snappyapi = self.snappy_client(integration)
                     try:
                         # Send message
-                        subject = "Report from %s" % (message.to_addr)
+                        subject = "Report from %s" % (message.from_addr)
                         # from_email should be "user+%s@domain.org"
                         from_addr = \
                             integration["snappy_from_email"] % message.id
@@ -84,11 +84,12 @@ class Send_Message(Task):
                             message=message.message,
                             to_addr=None,
                             from_addr=[
-                                {"name": message.to_addr,
+                                {"name": message.from_addr,
                                  "address": from_addr}]
                         )
-                        message.report.metadata["snappy_nonce"] = snappy_ticket
-                        message.report.save()  # save the upstream report
+                        report = message.report
+                        report.metadata["snappy_nonce"] = snappy_ticket
+                        report.save()  # save the upstream report
                         message.delivered = True
                         message.save()  # save the message
                     except HTTPError as e:
