@@ -158,5 +158,8 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']
 
+# in minutes
+NIGHTINGALE_BOUNCE_DELAY = os.environ.get('NIGHTINGALE_BOUNCE_DELAY', 5)
+
 import djcelery
 djcelery.setup_loader()

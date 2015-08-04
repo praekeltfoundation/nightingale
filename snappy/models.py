@@ -52,7 +52,7 @@ class Message(models.Model):
     from_addr = models.CharField(max_length=255, null=True, blank=True)
     to_addr = models.CharField(max_length=255, null=True, blank=True)
     delivered = models.BooleanField(default=False)
-    metadata = HStoreField(null=True, blank=True)
+    metadata = HStoreField(null=True, blank=True, default={})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
