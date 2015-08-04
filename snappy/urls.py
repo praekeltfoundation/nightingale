@@ -10,4 +10,5 @@ router.register(r'messages', views.MessageViewSet)
 urlpatterns = [
     url(r'^sys/', include(router.urls)),
     url(r'^snappymessage/', views.SnappyMessagePost.as_view()),
+    url(r'^snappywebhook/', views.SnappyWebhookListener.as_view()),
 ]
