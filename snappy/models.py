@@ -57,7 +57,7 @@ class Message(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s to " % self.message
+        return "%s to %s" % (self.message, self.target)
 
 # Make sure new messages are sent
 from django.db.models.signals import post_save
