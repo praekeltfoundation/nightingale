@@ -134,7 +134,7 @@ def fire_bounce_action(sender, instance, created, **kwargs):
     """
     first check for categories as those are manytomany and applied after 1st
     creation action.
-    if description is still None then fire with 10 min delay to allow for
+    if description is still None then fire with variable delay to allow for
     user update. bounce_reports is responsible for not firing if already logged
     """
     if instance.categories.count() > 0:
