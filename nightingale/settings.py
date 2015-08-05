@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.gis',
     # 3rd party
+    'djcelery',
     'django_hstore',
     'raven.contrib.django.raven_compat',
     'rest_framework',
