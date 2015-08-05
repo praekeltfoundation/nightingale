@@ -1,3 +1,4 @@
+import json
 from .models import Message
 from reports.models import Report
 from accounts.models import UserProject, Integration
@@ -52,7 +53,7 @@ class SnappyWebhookListener(APIView):
         event = request.data["event"]
         if event in allowed_events:
             if event == "message.outgoing":
-                data = request.data["data"]
+                data = json.loads(request.data["data"])
                 # create Vumi bound message if we can find related inbound
                 nonce = data["note"]["ticket"]["nonce"]
                 # should only be one with this nonce, but lets be liberal
@@ -72,10 +73,10 @@ class SnappyWebhookListener(APIView):
                     message.save()
                     # increment the replies
                     if "snappy_replies" in report.metadata:
-                        report.metadata["snappy_replies"] = int(
-                            report.metadata["snappy_replies"]) + 1
+                        report.metadata["snappy_replies"] = str(int(
+                            report.metadata["snappy_replies"]) + 1)
                     else:
-                        report.metadata["snappy_replies"] = 1
+                        report.metadata["snappy_replies"] = "1"
                     report.save()
                     # Return
                     status = 200
