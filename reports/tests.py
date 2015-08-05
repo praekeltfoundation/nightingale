@@ -335,9 +335,8 @@ class TestReportsAPI(AuthenticatedAPITestCase):
         self.assertEqual(m.from_addr, d.to_addr)
         self.assertEqual(
             m.message,
-            '<b>Description:</b> Test incident <br>'
-            '<b>Categories:</b> <br>Test Cat 1 <br>Test Cat 2 <br>'
-            '<b>Location:</b> <a href="https://www.google.co.za/maps/'
-            '@-33.0,18.0,13z">Map</a>')
+            'Description: Test incident \n\n'
+            'Categories: \nTest Cat 1 \nTest Cat 2 \n\n'
+            'Location: https://www.google.co.za/maps/@-33.0,18.0,13z')
         # remove to stop tearDown errors
         post_save.disconnect(fire_bounce_action, sender=Report)

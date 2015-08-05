@@ -40,13 +40,12 @@ class Bounce_Report(Task):
             if active_snappy.count() == 1 and \
                     "snappy_nonce" not in report.metadata:
                 # create a snappy message
-                content = "<b>Description:</b> %s <br>" % report.description
-                content += "<b>Categories:</b> <br>"
+                content = "Description: %s \n\n" % report.description
+                content += "Categories: \n"
                 for category in categories:
-                    content += "%s <br>" % category.name
-                content += '<b>Location:</b> ' + \
-                    '<a href="https://www.google.co.za' +\
-                    '/maps/@%s,%s,13z">Map</a>' % (
+                    content += "%s \n" % category.name
+                content += '\nLocation: ' + \
+                    'https://www.google.co.za/maps/@%s,%s,13z' % (
                         report.location.point.y, report.location.point.x)
                 message = Message()
                 message.integration = active_snappy[0]
