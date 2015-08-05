@@ -49,11 +49,11 @@ class SnappyWebhookListener(APIView):
         """
         allowed_events = ['message.outgoing']
         # Look up action first
-        event = request.body["event"]
+        event = request.data["event"]
         if event in allowed_events:
             if event == "message.outgoing":
                 # create Vumi bound message if we can find related inbound
-                nonce = request.body["note"]["ticket"]["nonce"]
+                nonce = request.data["note"]["ticket"]["nonce"]
                 # should only be one with this nonce, but lets be liberal
                 reports = Report.objects.filter(
                     metadata__contains={"snappy_nonce": nonce})
@@ -65,7 +65,7 @@ class SnappyWebhookListener(APIView):
                     message.integration = active_snappy[0]
                     message.report = report
                     message.target = "VUMI"
-                    message.message = request.body["note"]["content"]
+                    message.message = request.data["note"]["content"]
                     message.contact_key = report.contact_key
                     message.to_addr = report.to_addr
                     message.save()
