@@ -1,16 +1,19 @@
 import json
 import pytz
+import responses
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.test import TestCase
+from django.db.models.signals import post_save
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
 
-from .models import Category, ProjectCategory, Report
+from .models import Category, ProjectCategory, Report, fire_bounce_action
 from accounts.models import Project, UserProject
+from snappy.models import Message, fire_msg_action_if_new
 
 
 class APITestCase(TestCase):
@@ -22,8 +25,26 @@ class APITestCase(TestCase):
 
 class AuthenticatedAPITestCase(APITestCase):
 
+    def _replace_post_save_hooks(self):
+        has_listeners = lambda: post_save.has_listeners(Report)
+        assert has_listeners(), (
+            "Report model has no post_save listeners. Make sure"
+            " helpers cleaned up properly in earlier tests.")
+        post_save.disconnect(fire_bounce_action, sender=Report)
+        assert not has_listeners(), (
+            "Report model still has post_save listeners. Make sure"
+            " helpers cleaned up properly in earlier tests.")
+
+    def _restore_post_save_hooks(self):
+        has_listeners = lambda: post_save.has_listeners(Report)
+        assert not has_listeners(), (
+            "Report model still has post_save listeners. Make sure"
+            " helpers removed them properly in earlier tests.")
+        post_save.connect(fire_bounce_action, sender=Report)
+
     def setUp(self):
         super(AuthenticatedAPITestCase, self).setUp()
+        self._replace_post_save_hooks()
         self.adminusername = 'testadminuser'
         self.adminpassword = 'testadminpass'
         self.adminuser = User.objects.create_superuser(
@@ -44,9 +65,31 @@ class AuthenticatedAPITestCase(APITestCase):
         self.normaltoken = normaltoken.key
         self.normalclient.credentials(
             HTTP_AUTHORIZATION='Token ' + self.normaltoken)
+        self.project_id = self.make_user_project()
+        self.snappy_id = self.make_snappy_integration(self.project_id)
+
+    def tearDown(self):
+        self._restore_post_save_hooks()
 
 
 class TestReportsAPI(AuthenticatedAPITestCase):
+
+    def make_snappy_integration(self, project):
+        post_data = {
+            "project": "/api/v1/sys/projects/%s/" % project,
+            "integration_type": "Snappy",
+            "details": {
+                "snappy_api_key": "blah",
+                "snappy_mailbox_id": "10",
+                "snappy_api_url": "https://app.besnappy.com/api/v1",
+                "snappy_from_email": "mike+%s@example.org"
+            },
+            "active": True
+        }
+        response = self.adminclient.post('/api/v1/sys/integrations/',
+                                         json.dumps(post_data),
+                                         content_type='application/json')
+        return response.data["id"]
 
     def make_category(self, name="test cat", order=1):
         post_data = {
@@ -112,12 +155,11 @@ class TestReportsAPI(AuthenticatedAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_project_categories_data(self):
-        project = self.make_user_project()
         category1 = self.make_category(name="Test Cat 1", order=3)
         category2 = self.make_category(name="Test Cat 2", order=1)
         self.make_category(name="Test Cat 3", order=2)
         post_data = {
-            "project": "/api/v1/sys/projects/%s/" % project,
+            "project": "/api/v1/sys/projects/%s/" % self.project_id,
             "categories": ["/api/v1/sys/categories/%s/" % category1,
                            "/api/v1/sys/categories/%s/" % category2]
         }
@@ -147,11 +189,10 @@ class TestReportsAPI(AuthenticatedAPITestCase):
                          "Test Cat 1")
 
     def test_get_project_categories_data(self):
-        project = self.make_user_project()
         category1 = self.make_category(name="Test Cat 1", order=3)
         category2 = self.make_category(name="Test Cat 2", order=1)
         post_data = {
-            "project": "/api/v1/sys/projects/%s/" % project,
+            "project": "/api/v1/sys/projects/%s/" % self.project_id,
             "categories": ["/api/v1/sys/categories/%s/" % category1,
                            "/api/v1/sys/categories/%s/" % category2]
         }
@@ -167,14 +208,13 @@ class TestReportsAPI(AuthenticatedAPITestCase):
         self.assertEqual(readonly.data["name"], "Test Cat 1")
 
     def test_create_report_data(self):
-        project = self.make_user_project()
         category1 = self.make_category(name="Test Cat 1", order=1)
         location1 = Point(18.0000000, -33.0000000)
         post_data = {
             "contact_key": "579ed9e9c0554eeca149d7fccd9b54e5",
             "to_addr": "+27845001001",
             "categories": ["/api/v1/sys/categories/%s/" % category1],
-            "project": "/api/v1/sys/projects/%s/" % project,
+            "project": "/api/v1/sys/projects/%s/" % self.project_id,
             "location": self.make_location(18.0000000, -33.0000000),
             "description": "Test incident",
             "incident_at": "2015-02-02 07:10"
@@ -199,7 +239,6 @@ class TestReportsAPI(AuthenticatedAPITestCase):
                                                  tzinfo=pytz.utc))
 
     def test_create_report_data_normalclient(self):
-        self.make_user_project()
         category1 = self.make_category(name="Test Cat 1", order=1)
         category2 = self.make_category(name="Test Cat 2", order=1)
         location1 = Point(18.0000000, -33.0000000)
@@ -230,7 +269,6 @@ class TestReportsAPI(AuthenticatedAPITestCase):
                                                  tzinfo=pytz.utc))
 
     def test_update_report_data_normalclient(self):
-        self.make_user_project()
         category1 = self.make_category(name="Test Cat 1", order=1)
         category2 = self.make_category(name="Test Cat 2", order=1)
         post_data = {
@@ -258,3 +296,48 @@ class TestReportsAPI(AuthenticatedAPITestCase):
         self.assertEqual(response2.status_code, status.HTTP_200_OK)
         d = Report.objects.last()
         self.assertEqual(d.description, 'Added after')
+
+    @responses.activate
+    def test_create_report_data_create_message_normalclient(self):
+        # restore the post_save hooks just for this test
+        post_save.connect(fire_bounce_action, sender=Report)
+        post_save.connect(fire_msg_action_if_new, sender=Message)
+
+        responses.add(responses.POST,
+                      "https://app.besnappy.com/api/v1/note",
+                      body="nonce", status=200,
+                      content_type='application/json')
+
+        category1 = self.make_category(name="Test Cat 1", order=1)
+        category2 = self.make_category(name="Test Cat 2", order=1)
+        post_data = {
+            "contact_key": "579ed9e9c0554eeca149d7fccd9b54e5",
+            "to_addr": "+27845001001",
+            "categories": [category1, category2],
+            "location": self.make_location(18.0000000, -33.0000000),
+            "description": "Test incident",
+            "incident_at": "2015-02-02 07:10"
+
+        }
+        # Post user project categories
+        response = self.normalclient.post('/api/v1/report/',
+                                          json.dumps(post_data),
+                                          content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(responses.calls), 1)
+
+        # Check DB has auto-added keys
+        d = Report.objects.last()
+        self.assertEqual(d.contact_key, '579ed9e9c0554eeca149d7fccd9b54e5')
+        self.assertEqual(d.to_addr, '+27845001001')
+        self.assertEqual(d.metadata["snappy_nonce"], 'nonce')
+        m = Message.objects.last()
+        self.assertEqual(m.from_addr, d.to_addr)
+        self.assertEqual(
+            m.message,
+            '<b>Description:</b> Test incident <br>'
+            '<b>Categories:</b> <br>Test Cat 1 <br>Test Cat 2 <br>'
+            '<b>Location:</b> <a href="https://www.google.co.za/maps/'
+            '@-33.0,18.0,13z">Map</a>')
+        # remove to stop tearDown errors
+        post_save.disconnect(fire_bounce_action, sender=Report)

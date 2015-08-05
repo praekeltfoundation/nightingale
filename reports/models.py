@@ -2,6 +2,7 @@ import uuid
 
 from django.contrib.postgres.fields import HStoreField
 from django.contrib.gis.db import models
+from django.conf import settings
 from accounts.models import Project
 
 
@@ -114,10 +115,33 @@ class Report(models.Model):
                                  null=False)
     description = models.TextField(null=True, blank=True)
     incident_at = models.DateTimeField(null=True, blank=True)
-    metadata = HStoreField(null=True, blank=True)
+    metadata = HStoreField(null=True, blank=True, default={})
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "Incident for %s reported at %s" % (
             self.project.name, self.created_at)
+
+# Make sure new messages are sent
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .tasks import bounce_report
+
+
+@receiver(post_save, sender=Report)
+def fire_bounce_action(sender, instance, created, **kwargs):
+    """
+    first check for categories as those are manytomany and applied after 1st
+    creation action.
+    if description is still None then fire with variable delay to allow for
+    user update. bounce_reports is responsible for not firing if already logged
+    """
+    if instance.categories.count() > 0:
+        if instance.description is None:
+            when = int(settings.NIGHTINGALE_BOUNCE_DELAY) * 60
+        else:
+            when = 0
+
+        bounce_report.apply_async(kwargs={"report_id": instance.id},
+                                  countdown=when)

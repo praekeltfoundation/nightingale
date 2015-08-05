@@ -12,3 +12,5 @@ dj-static
 celery
 django-celery
 redis
+go-http==0.2.5
+besnappy==0.1.0

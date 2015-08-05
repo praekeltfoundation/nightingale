@@ -12,4 +12,5 @@ urlpatterns = patterns(
         'rest_framework.authtoken.views.obtain_auth_token'),
     url(r'^api/v1/', include('accounts.urls')),
     url(r'^api/v1/', include('reports.urls')),
+    url(r'^api/v1/', include('snappy.urls')),
 )
