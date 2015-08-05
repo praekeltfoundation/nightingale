@@ -29,7 +29,6 @@ class LocationSerializer(serializers.ModelSerializer):
 
 class ReportSerializer(serializers.HyperlinkedModelSerializer):
     location = LocationSerializer(many=False, read_only=False)
-    # metadata = serializers.DictField()
 
     class Meta:
         model = Report
