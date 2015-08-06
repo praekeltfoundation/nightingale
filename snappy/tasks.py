@@ -4,6 +4,8 @@ from celery.exceptions import SoftTimeLimitExceeded
 from django.core.exceptions import ObjectDoesNotExist
 from go_http.send import HttpApiSender
 from besnappy import SnappyApiSender
+import requests
+import json
 from requests.exceptions import HTTPError
 from .models import Message
 
@@ -118,6 +120,11 @@ class Send_Message(Task):
                                     {"name": message.from_addr,
                                      "address": from_addr}]
                             )
+                            # Add tags
+                            categories = report.categories.all()
+                            tags = list(cat.name for cat in categories)
+                            add_tags.delay(integration, snappy_ticket, tags)
+                            # Log the snappy ticket on the report
                             report.metadata["snappy_nonce"] = snappy_ticket
                             report.save()  # save the upstream report
                         else:
@@ -147,8 +154,62 @@ class Send_Message(Task):
 
         except SoftTimeLimitExceeded:
             logger.error(
-                'Soft time limit exceed processing location search \
+                'Soft time limit exceed processing sending message \
                  via Celery.',
                 exc_info=True)
 
 send_message = Send_Message()
+
+
+class Add_Tags(Task):
+
+    """
+    Task to add tags to tickets in Snappy
+    """
+    name = "snappy.tasks.add_tags"
+
+    class FailedEventRequest(Exception):
+
+        """
+        The attempted task failed because of a non-200 HTTP return
+        code.
+        """
+
+    def snappy_client(self, snappysettings):
+        return SnappyApiSender(
+            api_key=snappysettings["snappy_api_key"],
+            api_url=snappysettings["snappy_api_url"]
+        )
+
+    def run(self, snappysettings, snappynonce, tags, **kwargs):
+        """
+        Load and contruct message and send them off
+        """
+        l = self.get_logger(**kwargs)
+
+        l.info("Adding tags")
+        try:
+            url = "%s/ticket/%s/tags" % (
+                snappysettings["snappy_api_url"], snappynonce)
+            data = json.dumps({"tags": tags})
+            headers = {'content-type': 'application/json; charset=utf-8'}
+            auth = ('x', snappysettings["snappy_api_key"])
+            result = requests.post(url, auth=auth, data=data,
+                                   headers=headers, verify=False)
+            result.raise_for_status()
+            return result  # should be "OK"
+        except HTTPError as e:
+            # retry message sending if in 500 range (3 default
+            # retries)
+            if 500 < e.response.status_code < 599:
+                raise self.retry(exc=e)
+            else:
+                raise e
+
+        except SoftTimeLimitExceeded:
+            logger.error(
+                'Soft time limit exceed processing adding tags \
+                 via Celery.',
+                exc_info=True)
+
+add_tags = Add_Tags()

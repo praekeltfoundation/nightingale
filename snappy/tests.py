@@ -181,33 +181,9 @@ class TestMessagesAPI(AuthenticatedAPITestCase):
                       body="nonce", status=200,
                       content_type='application/json')
 
-        post_data = {
-            "integration": "/api/v1/sys/integrations/%s/" % self.snappy_id,
-            "report": "/api/v1/sys/reports/%s/" % self.report_id,
-            "target": "SNAPPY",
-            "message": "This is a test",
-            "contact_key": "579ed9e9c0554eeca149d7fccd9b54e5",
-            "from_addr": "+27845001001",
-        }
-        response = self.adminclient.post('/api/v1/sys/messages/',
-                                         json.dumps(post_data),
-                                         content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        d = Message.objects.last()
-        self.assertEqual(d.report.metadata["snappy_nonce"], 'nonce')
-        self.assertEqual(len(responses.calls), 1)
-        # remove to stop tearDown errors
-        post_save.disconnect(fire_msg_action_if_undelivered, sender=Message)
-
-    @responses.activate
-    def test_create_webhook_fire_task(self):
-        # restore the post_save hook just for this test
-        post_save.connect(fire_msg_action_if_undelivered, sender=Message)
-
         responses.add(responses.POST,
-                      "https://app.besnappy.com/api/v1/note",
-                      body="nonce", status=200,
+                      "https://app.besnappy.com/api/v1/ticket/nonce/tags",
+                      body="OK", status=200,
                       content_type='application/json')
 
         post_data = {
@@ -225,7 +201,41 @@ class TestMessagesAPI(AuthenticatedAPITestCase):
 
         d = Message.objects.last()
         self.assertEqual(d.report.metadata["snappy_nonce"], 'nonce')
-        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(len(responses.calls), 2)
+        # remove to stop tearDown errors
+        post_save.disconnect(fire_msg_action_if_undelivered, sender=Message)
+
+    @responses.activate
+    def test_create_webhook_fire_task(self):
+        # restore the post_save hook just for this test
+        post_save.connect(fire_msg_action_if_undelivered, sender=Message)
+
+        responses.add(responses.POST,
+                      "https://app.besnappy.com/api/v1/note",
+                      body="nonce", status=200,
+                      content_type='application/json')
+
+        responses.add(responses.POST,
+                      "https://app.besnappy.com/api/v1/ticket/nonce/tags",
+                      body="OK", status=200,
+                      content_type='application/json')
+
+        post_data = {
+            "integration": "/api/v1/sys/integrations/%s/" % self.snappy_id,
+            "report": "/api/v1/sys/reports/%s/" % self.report_id,
+            "target": "SNAPPY",
+            "message": "This is a test",
+            "contact_key": "579ed9e9c0554eeca149d7fccd9b54e5",
+            "from_addr": "+27845001001",
+        }
+        response = self.adminclient.post('/api/v1/sys/messages/',
+                                         json.dumps(post_data),
+                                         content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        d = Message.objects.last()
+        self.assertEqual(d.report.metadata["snappy_nonce"], 'nonce')
+        self.assertEqual(len(responses.calls), 2)
         # remove to stop tearDown errors
         post_save.disconnect(fire_msg_action_if_undelivered, sender=Message)
 

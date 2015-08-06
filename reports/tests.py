@@ -308,6 +308,11 @@ class TestReportsAPI(AuthenticatedAPITestCase):
                       body="nonce", status=200,
                       content_type='application/json')
 
+        responses.add(responses.POST,
+                      "https://app.besnappy.com/api/v1/ticket/nonce/tags",
+                      body="OK", status=200,
+                      content_type='application/json')
+
         category1 = self.make_category(name="Test Cat 1", order=1)
         category2 = self.make_category(name="Test Cat 2", order=1)
         post_data = {
@@ -324,7 +329,7 @@ class TestReportsAPI(AuthenticatedAPITestCase):
                                           json.dumps(post_data),
                                           content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(len(responses.calls), 2)
 
         # Check DB has auto-added keys
         d = Report.objects.last()
