@@ -102,23 +102,37 @@ class Send_Message(Task):
                 else:
                     snappyapi = self.snappy_client(integration)
                     try:
-                        # Send message
-                        subject = "Report from %s" % (message.from_addr)
+                        report = message.report
                         # from_email should be "user+%s@domain.org"
                         from_addr = \
                             integration["snappy_from_email"] % message.id
-                        snappy_ticket = snappyapi.create_note(
-                            mailbox_id=integration["snappy_mailbox_id"],
-                            subject=subject,
-                            message=message.message,
-                            to_addr=None,
-                            from_addr=[
-                                {"name": message.from_addr,
-                                 "address": from_addr}]
-                        )
-                        report = message.report
-                        report.metadata["snappy_nonce"] = snappy_ticket
-                        report.save()  # save the upstream report
+                        if "snappy_nonce" not in report.metadata:
+                            # open a new ticket
+                            subject = "Report from %s" % (message.from_addr)
+                            snappy_ticket = snappyapi.create_note(
+                                mailbox_id=integration["snappy_mailbox_id"],
+                                subject=subject,
+                                message=message.message,
+                                to_addr=None,
+                                from_addr=[
+                                    {"name": message.from_addr,
+                                     "address": from_addr}]
+                            )
+                            report.metadata["snappy_nonce"] = snappy_ticket
+                            report.save()  # save the upstream report
+                        else:
+                            # this is a reply to an open ticket
+                            subject = "Update from %s" % (message.from_addr)
+                            snappy_ticket = snappyapi.create_note(
+                                mailbox_id=integration["snappy_mailbox_id"],
+                                ticket_id=report.metadata["snappy_nonce"],
+                                subject=subject,
+                                message=message.message,
+                                to_addr=None,
+                                from_addr=[
+                                    {"name": message.from_addr,
+                                     "address": from_addr}]
+                            )
                         message.delivered = True
                         message.save()  # save the message
                     except HTTPError as e:
