@@ -197,7 +197,7 @@ class Add_Tags(Task):
             result = requests.post(url, auth=auth, data=data,
                                    headers=headers, verify=False)
             result.raise_for_status()
-            return result  # should be "OK"
+            return result.text  # should be "OK"
         except HTTPError as e:
             # retry message sending if in 500 range (3 default
             # retries)
