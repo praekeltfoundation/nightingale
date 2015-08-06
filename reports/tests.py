@@ -13,7 +13,7 @@ from rest_framework.authtoken.models import Token
 
 from .models import Category, ProjectCategory, Report, fire_bounce_action
 from accounts.models import Project, UserProject
-from snappy.models import Message, fire_msg_action_if_new
+from snappy.models import Message, fire_msg_action_if_undelivered
 
 
 class APITestCase(TestCase):
@@ -301,7 +301,7 @@ class TestReportsAPI(AuthenticatedAPITestCase):
     def test_create_report_data_create_message_normalclient(self):
         # restore the post_save hooks just for this test
         post_save.connect(fire_bounce_action, sender=Report)
-        post_save.connect(fire_msg_action_if_new, sender=Message)
+        post_save.connect(fire_msg_action_if_undelivered, sender=Message)
 
         responses.add(responses.POST,
                       "https://app.besnappy.com/api/v1/note",
