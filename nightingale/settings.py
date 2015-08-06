@@ -164,3 +164,8 @@ NIGHTINGALE_BOUNCE_DELAY = os.environ.get('NIGHTINGALE_BOUNCE_DELAY', 5)
 
 import djcelery
 djcelery.setup_loader()
+
+try:
+    from local_settings import *   # flake8: noqa
+except ImportError:
+    pass
