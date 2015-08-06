@@ -1,15 +1,43 @@
 from celery.task import Task
 from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
+from django.core.exceptions import ObjectDoesNotExist
 from go_http.send import HttpApiSender
 from besnappy import SnappyApiSender
 from requests.exceptions import HTTPError
+from .models import Message
 
-from django.core.exceptions import ObjectDoesNotExist
+try:
+    from HTMLParser import HTMLParser
+except ImportError:
+    from html.parser import HTMLParser
+
 
 logger = get_task_logger(__name__)
 
-from .models import Message
+
+class MLStripper(HTMLParser):
+
+    def __init__(self):
+        self.convert_charrefs = False
+        self.strict = False
+        self.reset()
+        self.fed = []
+
+    def handle_data(self, d):
+        self.fed.append(d)
+
+    def handle_charref(self, name):
+        pass
+
+    def get_data(self):
+        return ''.join(self.fed)
+
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
 
 
 class Send_Message(Task):
@@ -55,8 +83,9 @@ class Send_Message(Task):
                     vumiapi = self.vumi_client(integration)
                     try:
                             # Plain content
-                        vumiresponse = vumiapi.send_text(message.to_addr,
-                                                         message.message)
+                        vumiresponse = vumiapi.send_text(
+                            message.to_addr,
+                            strip_tags(message.message))
                         l.info("Sent text message to <%s>" % message.to_addr)
                         message.metadata["vumi_message_id"] = \
                             vumiresponse["message_id"]
