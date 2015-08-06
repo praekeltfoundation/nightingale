@@ -4,7 +4,7 @@ djangorestframework-hstore
 djangorestframework-gis
 dj-database-url
 psycopg2
-raven
+raven==5.1.1
 django-grappelli
 gunicorn
 django-filter
