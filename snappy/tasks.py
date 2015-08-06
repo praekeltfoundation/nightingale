@@ -193,7 +193,7 @@ class Add_Tags(Task):
                 snappysettings["snappy_api_url"], snappynonce)
             data = json.dumps({"tags": tags})
             headers = {'content-type': 'application/json; charset=utf-8'}
-            auth = ('x', snappysettings["snappy_api_key"])
+            auth = (snappysettings["snappy_api_key"], 'x')
             result = requests.post(url, auth=auth, data=data,
                                    headers=headers, verify=False)
             result.raise_for_status()
