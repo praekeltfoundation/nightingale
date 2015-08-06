@@ -62,6 +62,7 @@ class AuthenticatedAPITestCase(APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.normaltoken)
         self.project_id = self.make_user_project()
         self.snappy_id = self.make_snappy_integration(self.project_id)
+        self.vumi_id = self.make_vumi_integration(self.project_id)
         self.report_id = self.make_report()
 
     def tearDown(self):
@@ -79,6 +80,23 @@ class TestMessagesAPI(AuthenticatedAPITestCase):
                 "snappy_mailbox_id": "10",
                 "snappy_api_url": "https://app.besnappy.com/api/v1",
                 "snappy_from_email": "mike+%s@example.org"
+            },
+            "active": True
+        }
+        response = self.adminclient.post('/api/v1/sys/integrations/',
+                                         json.dumps(post_data),
+                                         content_type='application/json')
+        return response.data["id"]
+
+    def make_vumi_integration(self, project):
+        post_data = {
+            "project": "/api/v1/sys/projects/%s/" % project,
+            "integration_type": "Vumi",
+            "details": {
+                "vumi_api_url": "http://example.com/api/v1/go",
+                "vumi_account_key": "acc-key",
+                "vumi_conversation_key": "conv-key",
+                "vumi_conversation_token": "conv-token"
             },
             "active": True
         }

@@ -61,10 +61,10 @@ class SnappyWebhookListener(APIView):
                     metadata__contains={"snappy_nonce": nonce})
                 if reports.count() > 0:
                     report = reports[0]  # if more than one, just use 1st
-                    active_snappy = report.project.integrations.filter(
-                        integration_type='Snappy', active=True)
+                    active_vumi = report.project.integrations.filter(
+                        integration_type='Vumi', active=True)
                     message = Message()
-                    message.integration = active_snappy[0]
+                    message.integration = active_vumi[0]
                     message.report = report
                     message.target = "VUMI"
                     message.message = data["note"]["content"]
