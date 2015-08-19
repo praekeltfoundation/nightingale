@@ -30,7 +30,23 @@ class Send_Submission(Task):
     def run(self, submission_id, **kwargs):
         try:
             submission = Submission.objects.get(pk=submission_id)
-            print submission
+            if submission.submitted is False:
+                integration = submission.integration.details
+                data = '{"submission": '+submission.content+', "id": "'+integration["form_id"]+'"}'
+                print data
+                base64string = base64.encodestring(
+                    '%s:%s' % (integration["username"],
+                    integration["password"])).replace('\n', ''
+                )
+                r = requests.post(
+                    integration["url"],
+                    data=data,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": "Basic %s" % base64string
+                    }
+                )
+                print json.dumps(r.json())
         except ObjectDoesNotExist:
             logger.error('Missing Submission object', exc_info=True)
 
