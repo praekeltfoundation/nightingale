@@ -18,3 +18,13 @@ class Submission(models.Model):
 
     def __str__(self):
         return self.content
+
+# send new submissions
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .tasks import send_submission
+
+@receiver(post_save, sender=Submission)
+def fire_subm_action_if_undelivered(sender, instance, created, **kwargs):
+    if not instance.submitted:
+        send_submission.delay(str(instance.id))
