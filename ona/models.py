@@ -14,6 +14,7 @@ class Submission(models.Model):
     content = models.TextField(null=False, blank=False)
     metadata = HStoreField(null=True, blank=True, default={})
     created_at = models.DateTimeField(auto_now_add=True)
+    submitted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.content

@@ -20,6 +20,7 @@ class Migration(migrations.Migration):
                 ('content', models.TextField()),
                 ('metadata', django.contrib.postgres.fields.hstore.HStoreField(default={}, null=True, blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('submitted', models.BooleanField(default=False)),
                 ('integration', models.ForeignKey(related_name='submissions', to='accounts.Integration')),
                 ('report', models.ForeignKey(related_name='submissions', to='reports.Report', null=True)),
             ],
