@@ -47,7 +47,10 @@ class Send_Submission(Task):
                             "Authorization": "Basic %s" % base64string
                         }
                     )
-                    
+
+                    # Mark the submission as submitted
+                    submission.submitted = True
+                    submission.save()
                     # Log the Ona response on the report
                     response = r.json()
                     report = submission.report
