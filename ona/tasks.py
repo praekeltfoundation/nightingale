@@ -47,8 +47,17 @@ class Send_Submission(Task):
                             "Authorization": "Basic %s" % base64string
                         }
                     )
-                    print json.dumps(r.json())
-
+                    
+                    # Log the Ona response on the report
+                    response = r.json()
+                    report = submission.report
+                    if "error" in response:
+                        report.metadata["ona_reponse"] = response["error"]
+                        print response["error"]
+                    else:
+                        report.metadata["ona_reponse"] = response["message"]
+                        print response["message"]
+                    report.save()
                 except HTTPError as e:
                     #retry message sending if in 500 range (3 default retries)
                     if 500 < e.response.status_code < 599:
