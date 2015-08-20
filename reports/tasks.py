@@ -62,8 +62,16 @@ class Bounce_Report(Task):
             if active_ona.count() == 1 and \
                     "ona_reponse" not in report.metadata:
                 # create a json object to send to Ona
+                category_list = []
+                for category in categories:
+                    category_list.append(category.name)
                 content = {
-                            "Description": report.description
+                            "description": report.description,
+                            "categories": category_list,
+                            "location": "%s %s" %(
+                                report.location.point.y, report.location.point.x),
+                            "incident_at": report.incident_at.isoformat(),
+                            "created_at": report.created_at.isoformat()
                             }
                 submission = Submission()
                 submission.integration = active_ona[0]
