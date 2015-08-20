@@ -38,15 +38,23 @@ class Send_Submission(Task):
                     '%s:%s' % (integration["username"],
                     integration["password"])).replace('\n', ''
                 )
-                r = requests.post(
-                    integration["url"],
-                    data=data,
-                    headers={
-                        "Content-Type": "application/json",
-                        "Authorization": "Basic %s" % base64string
-                    }
-                )
-                print json.dumps(r.json())
+                try:
+                    r = requests.post(
+                        integration["url"],
+                        data=data,
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": "Basic %s" % base64string
+                        }
+                    )
+                    print json.dumps(r.json())
+
+                except HTTPError as e:
+                    #retry message sending if in 500 range (3 default retries)
+                    if 500 < e.response.status_code < 599:
+                        raise self.retry(exc=e)
+                    else:
+                        raise e
         except ObjectDoesNotExist:
             logger.error('Missing Submission object', exc_info=True)
 
