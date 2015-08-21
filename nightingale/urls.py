@@ -13,5 +13,4 @@ urlpatterns = patterns(
     url(r'^api/v1/', include('accounts.urls')),
     url(r'^api/v1/', include('reports.urls')),
     url(r'^api/v1/', include('snappy.urls')),
-    url(r'^api/v1/', include('ona.urls')),
 )
