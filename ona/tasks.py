@@ -3,7 +3,7 @@ from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
 from django.core.exceptions import ObjectDoesNotExist
 from go_http.send import HttpApiSender
-import requests, base64, json
+import requests, json
 from requests.exceptions import HTTPError
 from .models import Submission
 
@@ -34,17 +34,13 @@ class Send_Submission(Task):
                 integration = submission.integration.details
                 data = '{"submission": '+submission.content+', "id": "'+integration["form_id"]+'"}'
                 print data
-                base64string = base64.encodestring(
-                    '%s:%s' % (integration["username"],
-                    integration["password"])).replace('\n', ''
-                )
                 try:
                     r = requests.post(
                         integration["url"],
                         data=data,
+                        auth=(integration["username"], integration["password"]),
                         headers={
                             "Content-Type": "application/json",
-                            "Authorization": "Basic %s" % base64string
                         }
                     )
 
