@@ -2,17 +2,12 @@ from celery.task import Task
 from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
 from django.core.exceptions import ObjectDoesNotExist
-from go_http.send import HttpApiSender
-import requests, json
+import requests
 from requests.exceptions import HTTPError
 from .models import Submission
 
-try:
-    from HTMLParser import HTMLParser
-except ImportError:
-    from html.parser import HTMLParser
-
 logger = get_task_logger(__name__)
+
 
 class Send_Submission(Task):
 
@@ -32,12 +27,14 @@ class Send_Submission(Task):
             submission = Submission.objects.get(pk=submission_id)
             if submission.submitted is False:
                 integration = submission.integration.details
-                data = '{"submission": '+submission.content+', "id": "'+integration["form_id"]+'"}'
+                data = '{"submission": '+submission.content+', "id": \
+                    "'+integration["form_id"]+'"}'
                 try:
                     r = requests.post(
                         integration["url"],
                         data=data,
-                        auth=(integration["username"], integration["password"]),
+                        auth=(integration["username"],
+                              integration["password"]),
                         headers={
                             "Content-Type": "application/json",
                         }
@@ -55,7 +52,7 @@ class Send_Submission(Task):
                         report.metadata["ona_response"] = response["message"]
                     report.save()
                 except HTTPError as e:
-                    #retry message sending if in 500 range (3 default retries)
+                    # retry message sending if in 500 range (3 default retries)
                     if 500 < e.response.status_code < 599:
                         raise self.retry(exc=e)
                     else:
@@ -64,9 +61,9 @@ class Send_Submission(Task):
             logger.error('Missing Submission object', exc_info=True)
 
         except SoftTimeLimitExceeded:
-            logger.error (
-            'Soft time limit exceed processing sending message via \
-                Celery.',
-            exc_info=True)
+            logger.error(
+                'Soft time limit exceed processing sending message via \
+                    Celery.',
+                exc_info=True)
 
 send_submission = Send_Submission()

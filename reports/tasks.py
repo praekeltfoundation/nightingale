@@ -40,7 +40,7 @@ class Bounce_Report(Task):
             active_snappy = integrations.filter(integration_type='Snappy',
                                                 active=True)
             active_ona = integrations.filter(integration_type='Ona',
-                                                active=True)
+                                             active=True)
             if active_snappy.count() == 1 and \
                     "snappy_nonce" not in report.metadata:
                 # create a snappy message
@@ -66,13 +66,13 @@ class Bounce_Report(Task):
                 for category in categories:
                     category_list.append(category.name)
                 content = {
-                            "description": report.description,
-                            "categories": category_list,
-                            "location": "%s %s" %(
-                                report.location.point.y, report.location.point.x),
-                            "incident_at": report.incident_at.isoformat(),
-                            "created_at": report.created_at.isoformat()
-                            }
+                    "description": report.description,
+                    "categories": category_list,
+                    "location": "%s %s" % (
+                        report.location.point.y, report.location.point.x),
+                    "incident_at": report.incident_at.isoformat(),
+                    "created_at": report.created_at.isoformat()
+                }
                 submission = Submission()
                 submission.integration = active_ona[0]
                 submission.report = report
