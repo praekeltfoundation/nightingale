@@ -33,7 +33,6 @@ class Send_Submission(Task):
             if submission.submitted is False:
                 integration = submission.integration.details
                 data = '{"submission": '+submission.content+', "id": "'+integration["form_id"]+'"}'
-                print data
                 try:
                     r = requests.post(
                         integration["url"],
@@ -52,10 +51,8 @@ class Send_Submission(Task):
                     report = submission.report
                     if "error" in response:
                         report.metadata["ona_reponse"] = response["error"]
-                        print response["error"]
                     else:
                         report.metadata["ona_reponse"] = response["message"]
-                        print response["message"]
                     report.save()
                 except HTTPError as e:
                     #retry message sending if in 500 range (3 default retries)
