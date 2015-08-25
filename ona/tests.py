@@ -110,7 +110,7 @@ class TestSubmissions(SubmissionsTestCase):
 
     def test_create_report_with_ona_response(self):
         ona_integration = self.make_ona_integration(self.project)
-        report = self.make_report(self.project, {"ona_reponse": "a response"})
+        report = self.make_report(self.project, {"ona_response": "a response"})
         self.assertEqual(ona_integration.submissions.count(), 0)
 
     @responses.activate
@@ -131,7 +131,7 @@ class TestSubmissions(SubmissionsTestCase):
         )
         submission.save()
         updated_report = Report.objects.get(pk=report.id)
-        self.assertEqual(updated_report.metadata["ona_reponse"], "Successful submission")
+        self.assertEqual(updated_report.metadata["ona_response"], "Successful submission")
         self._replace_post_save_hooks()
 
     @responses.activate
@@ -152,5 +152,5 @@ class TestSubmissions(SubmissionsTestCase):
         )
         submission.save()
         updated_report = Report.objects.get(pk=report.id)
-        self.assertEqual(updated_report.metadata["ona_reponse"], "json object expected")
+        self.assertEqual(updated_report.metadata["ona_response"], "json object expected")
         self._replace_post_save_hooks()

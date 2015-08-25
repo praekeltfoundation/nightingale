@@ -50,9 +50,9 @@ class Send_Submission(Task):
                     response = r.json()
                     report = submission.report
                     if "error" in response:
-                        report.metadata["ona_reponse"] = response["error"]
+                        report.metadata["ona_response"] = response["error"]
                     else:
-                        report.metadata["ona_reponse"] = response["message"]
+                        report.metadata["ona_response"] = response["message"]
                     report.save()
                 except HTTPError as e:
                     #retry message sending if in 500 range (3 default retries)

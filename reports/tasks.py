@@ -60,7 +60,7 @@ class Bounce_Report(Task):
                 message.from_addr = report.to_addr
                 message.save()
             if active_ona.count() == 1 and \
-                    "ona_reponse" not in report.metadata:
+                    "ona_response" not in report.metadata:
                 # create a json object to send to Ona
                 category_list = []
                 for category in categories:
