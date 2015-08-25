@@ -98,4 +98,19 @@ class TestSubmissions(SubmissionsTestCase):
         project.reports.add(report)
         return report
 
+    def test_create_report_with_active_ona(self):
+        ona_integration = self.make_ona_integration(self.project)
+        report = self.make_report(self.project)
+        self.assertEqual(ona_integration.submissions.count(), 1)
+
+    def test_create_report_with_inactive_ona(self):
+        ona_integration = self.make_ona_integration(self.project, False)
+        report = self.make_report(self.project)
+        self.assertEqual(ona_integration.submissions.count(), 0)
+
+    def test_create_report_with_ona_response(self):
+        ona_integration = self.make_ona_integration(self.project)
+        report = self.make_report(self.project, {"ona_reponse": "a response"})
+        self.assertEqual(ona_integration.submissions.count(), 0)
+
     
