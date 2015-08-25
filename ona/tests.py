@@ -113,4 +113,23 @@ class TestSubmissions(SubmissionsTestCase):
         report = self.make_report(self.project, {"ona_reponse": "a response"})
         self.assertEqual(ona_integration.submissions.count(), 0)
 
-    
+    @responses.activate
+    def test_send_submission_task_success(self):
+        self._restore_post_save_hooks()
+        responses.add(responses.POST,
+                    "https://ona.io/api/v1/submissions",
+                    body='{"message": "Successful submission"}', status=200,
+                    content_type='application/json')
+
+        report = self.make_report(self.project)
+        ona_integration = self.make_ona_integration(self.project)
+
+        submission = Submission.objects.create(
+            report = report,
+            integration = ona_integration,
+            content = "{some content to send}"
+        )
+        submission.save()
+        updated_report = Report.objects.get(pk=report.id)
+        self.assertEqual(updated_report.metadata["ona_reponse"], "Successful submission")
+        self._replace_post_save_hooks()
