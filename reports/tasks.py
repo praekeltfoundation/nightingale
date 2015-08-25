@@ -70,7 +70,7 @@ class Bounce_Report(Task):
                     "categories": category_list,
                     "location": "%s %s" % (
                         report.location.point.y, report.location.point.x),
-                    "incident_at": report.incident_at.isoformat(),
+                    "incident_time": report.incident_at.isoformat(),
                     "created_at": report.created_at.isoformat()
                 }
                 submission = Submission()
