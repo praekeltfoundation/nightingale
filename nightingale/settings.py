@@ -54,7 +54,7 @@ INSTALLED_APPS = (
     'accounts',
     'reports',
     'snappy',
-    'ona'
+    'ona',
 )
 
 MIDDLEWARE_CLASSES = (
