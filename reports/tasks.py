@@ -1,3 +1,4 @@
+import json
 from celery.task import Task
 from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
@@ -8,6 +9,7 @@ logger = get_task_logger(__name__)
 
 from .models import Report
 from snappy.models import Message
+from ona.models import Submission
 
 
 class Bounce_Report(Task):
@@ -37,6 +39,8 @@ class Bounce_Report(Task):
             categories = report.categories.all()
             active_snappy = integrations.filter(integration_type='Snappy',
                                                 active=True)
+            active_ona = integrations.filter(integration_type='Ona',
+                                             active=True)
             if active_snappy.count() == 1 and \
                     "snappy_nonce" not in report.metadata:
                 # create a snappy message
@@ -55,6 +59,25 @@ class Bounce_Report(Task):
                 message.contact_key = report.contact_key
                 message.from_addr = report.to_addr
                 message.save()
+            if active_ona.count() == 1 and \
+                    "ona_response" not in report.metadata:
+                # create a json object to send to Ona
+                category_list = []
+                for category in categories:
+                    category_list.append(category.name)
+                content = {
+                    "description": report.description,
+                    "categories": category_list,
+                    "location": "%s %s" % (
+                        report.location.point.y, report.location.point.x),
+                    "incident_time": report.incident_at.isoformat(),
+                    "created_at": report.created_at.isoformat()
+                }
+                submission = Submission()
+                submission.integration = active_ona[0]
+                submission.report = report
+                submission.content = json.dumps(content)
+                submission.save()
         except ObjectDoesNotExist:
             logger.error('Missing Report object', exc_info=True)
 
