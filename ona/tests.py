@@ -33,13 +33,13 @@ class SubmissionsTestCase(TestCase):
                           dispatch_uid="ona.post_save.submission")
 
     def make_user_project(self):
-        project3 = Project.objects.create(
+        project = Project.objects.create(
             code="TESTPROJ3", name="Test Project 3")
         userproject = UserProject.objects.create(
             user=self.normaluser)
-        userproject.projects.add(project3)
+        userproject.projects.add(project)
         userproject.save()
-        return project3
+        return project
 
     def setUp(self):
         super(SubmissionsTestCase, self).setUp()
@@ -71,16 +71,16 @@ class TestSubmissions(SubmissionsTestCase):
         return ona_integration
 
     def make_category(self, name="test cat", order=1):
-        category1 = Category.objects.create(
+        category = Category.objects.create(
             name=name,
             order=order,
             metadata={}
         )
         projectcategory = ProjectCategory.objects.create(
             project=self.project)
-        projectcategory.categories.add(category1)
+        projectcategory.categories.add(category)
         projectcategory.save()
-        return category1
+        return category
 
     def make_location(self, x, y):
         point_data = Location.objects.create(
@@ -90,7 +90,7 @@ class TestSubmissions(SubmissionsTestCase):
         return point_data
 
     def make_report(self, project, metadata={}):
-        category1 = self.make_category(name="Test Cat 1", order=1)
+        category = self.make_category(name="Test Cat 1", order=1)
         location = self.make_location(18.0000000, -33.0000000)
         report = Report.objects.create(
             contact_key="579ed9e9c0554eeca149d7fccd9b54e5",
@@ -100,7 +100,7 @@ class TestSubmissions(SubmissionsTestCase):
             metadata=metadata
         )
         report.save()
-        report.categories.add(category1)
+        report.categories.add(category)
         project.reports.add(report)
         return report
 
