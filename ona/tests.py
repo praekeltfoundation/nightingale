@@ -1,5 +1,6 @@
 import datetime
 import responses
+import json
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.db.models.signals import post_save
@@ -134,7 +135,7 @@ class TestSubmissions(SubmissionsTestCase):
         submission = Submission.objects.create(
             report=report,
             integration=ona_integration,
-            content="{some content to send}"
+            content=json.dumps({"info": "some content to send"})
         )
         submission.save()
         updated_report = Report.objects.get(pk=report.id)
@@ -160,7 +161,7 @@ class TestSubmissions(SubmissionsTestCase):
         submission = Submission.objects.create(
             report=report,
             integration=ona_integration,
-            content="{some content to send}"
+            content=json.dumps({"info": "some content to send"})
         )
         submission.save()
         updated_report = Report.objects.get(pk=report.id)

@@ -3,6 +3,7 @@ from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
 from django.core.exceptions import ObjectDoesNotExist
 import requests
+import json
 from requests.exceptions import HTTPError
 from .models import Submission
 
@@ -27,8 +28,10 @@ class SendSubmission(Task):
             submission = Submission.objects.get(pk=submission_id)
             if submission.submitted is False:
                 integration = submission.integration.details
-                data = '{"submission": '+submission.content+', "id": \
-                    "'+integration["form_id"]+'"}'
+                data = json.dumps({
+                    "submission": json.loads(submission.content),
+                    "id": integration["form_id"]
+                })
                 try:
                     r = requests.post(
                         integration["url"],
