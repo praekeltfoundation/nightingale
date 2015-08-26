@@ -25,7 +25,11 @@ class SendSubmission(Task):
 
     def run(self, submission_id, **kwargs):
         try:
-            submission = Submission.objects.get(pk=submission_id)
+            try:
+                submission = Submission.objects.get(pk=submission_id)
+            except ObjectDoesNotExist:
+                logger.error('Missing Submission object', exc_info=True)
+
             if submission.submitted is False:
                 integration = submission.integration.details
                 data = json.dumps({
@@ -43,25 +47,25 @@ class SendSubmission(Task):
                         }
                     )
 
-                    # Mark the submission as submitted
-                    submission.submitted = True
-                    submission.save()
-                    # Log the Ona response on the report
                     response = r.json()
-                    report = submission.report
-                    if "error" in response:
-                        report.metadata["ona_response"] = response["error"]
-                    else:
-                        report.metadata["ona_response"] = response["message"]
-                    report.save()
                 except HTTPError as e:
                     # retry message sending if in 500 range (3 default retries)
                     if 500 < e.response.status_code < 599:
                         raise self.retry(exc=e)
                     else:
                         raise e
-        except ObjectDoesNotExist:
-            logger.error('Missing Submission object', exc_info=True)
+
+                # Log the Ona response on the report
+                report = submission.report
+                if "error" in response:
+                    report.metadata["ona_response"] = response["error"]
+                else:
+                    report.metadata["ona_response"] = response["message"]
+                report.save()
+
+                # Mark the submission as submitted
+                submission.submitted = True
+                submission.save()
 
         except SoftTimeLimitExceeded:
             logger.error(
