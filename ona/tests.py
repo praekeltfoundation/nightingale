@@ -122,51 +122,55 @@ class TestSubmissions(SubmissionsTestCase):
     @responses.activate
     def test_send_submission_task_success(self):
         self._restore_post_save_hooks()
-        responses.add(
-            responses.POST,
-            "https://ona.io/api/v1/submissions",
-            body='{"message": "Successful submission"}', status=200,
-            content_type='application/json'
-        )
+        try:
+            responses.add(
+                responses.POST,
+                "https://ona.io/api/v1/submissions",
+                body='{"message": "Successful submission"}', status=200,
+                content_type='application/json'
+            )
 
-        report = self.make_report(self.project)
-        ona_integration = self.make_ona_integration(self.project)
+            report = self.make_report(self.project)
+            ona_integration = self.make_ona_integration(self.project)
 
-        submission = Submission.objects.create(
-            report=report,
-            integration=ona_integration,
-            content=json.dumps({"info": "some content to send"})
-        )
-        submission.save()
-        updated_report = Report.objects.get(pk=report.id)
-        self.assertEqual(
-            updated_report.metadata["ona_response"],
-            "Successful submission"
-        )
-        self._replace_post_save_hooks()
+            submission = Submission.objects.create(
+                report=report,
+                integration=ona_integration,
+                content=json.dumps({"info": "some content to send"})
+            )
+            submission.save()
+            updated_report = Report.objects.get(pk=report.id)
+            self.assertEqual(
+                updated_report.metadata["ona_response"],
+                "Successful submission"
+            )
+        finally:
+            self._replace_post_save_hooks()
 
     @responses.activate
     def test_send_submission_task_ona_error(self):
         self._restore_post_save_hooks()
-        responses.add(
-            responses.POST,
-            "https://ona.io/api/v1/submissions",
-            body='{"error": "json object expected"}', status=200,
-            content_type='application/json'
-        )
+        try:
+            responses.add(
+                responses.POST,
+                "https://ona.io/api/v1/submissions",
+                body='{"error": "json object expected"}', status=200,
+                content_type='application/json'
+            )
 
-        report = self.make_report(self.project)
-        ona_integration = self.make_ona_integration(self.project)
+            report = self.make_report(self.project)
+            ona_integration = self.make_ona_integration(self.project)
 
-        submission = Submission.objects.create(
-            report=report,
-            integration=ona_integration,
-            content=json.dumps({"info": "some content to send"})
-        )
-        submission.save()
-        updated_report = Report.objects.get(pk=report.id)
-        self.assertEqual(
-            updated_report.metadata["ona_response"],
-            "json object expected"
-        )
-        self._replace_post_save_hooks()
+            submission = Submission.objects.create(
+                report=report,
+                integration=ona_integration,
+                content=json.dumps({"info": "some content to send"})
+            )
+            submission.save()
+            updated_report = Report.objects.get(pk=report.id)
+            self.assertEqual(
+                updated_report.metadata["ona_response"],
+                "json object expected"
+            )
+        finally:
+            self._replace_post_save_hooks()
