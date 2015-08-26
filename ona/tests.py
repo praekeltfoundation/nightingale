@@ -16,7 +16,8 @@ class SubmissionsTestCase(TestCase):
             "Submission model has no post_save listeners. Make sure helpers"
             " cleaned up properly in earlier tests.")
         post_save.disconnect(fire_subm_action_if_undelivered,
-                             sender=Submission)
+                             sender=Submission,
+                             dispatch_uid="ona.post_save.submission")
         assert not has_listeners(), (
             "Submission model still has post_save listeners. Make sure helpers"
             " cleaned up properly in earlier tests.")
@@ -26,7 +27,9 @@ class SubmissionsTestCase(TestCase):
         assert not has_listeners(), (
             "Submission model still has post_save listeners. Make sure helpers"
             " removed them properly in earlier tests.")
-        post_save.connect(fire_subm_action_if_undelivered, sender=Submission)
+        post_save.connect(fire_subm_action_if_undelivered,
+                          sender=Submission,
+                          dispatch_uid="ona.post_save.submission")
 
     def setUp(self):
         super(SubmissionsTestCase, self).setUp()

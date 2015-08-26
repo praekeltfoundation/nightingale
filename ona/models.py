@@ -26,7 +26,8 @@ from django.dispatch import receiver
 from .tasks import send_submission
 
 
-@receiver(post_save, sender=Submission)
+@receiver(post_save, sender=Submission,
+          dispatch_uid="ona.post_save.submission")
 def fire_subm_action_if_undelivered(sender, instance, created, **kwargs):
     if not instance.submitted:
         send_submission.delay(str(instance.id))
