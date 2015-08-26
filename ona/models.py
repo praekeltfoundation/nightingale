@@ -30,4 +30,4 @@ from .tasks import send_submission
           dispatch_uid="ona.post_save.submission")
 def fire_subm_action_if_undelivered(sender, instance, created, **kwargs):
     if not instance.submitted:
-        send_submission.delay(str(instance.id))
+        send_submission.delay(instance.id)
