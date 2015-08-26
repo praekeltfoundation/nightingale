@@ -9,7 +9,7 @@ from .models import Submission
 logger = get_task_logger(__name__)
 
 
-class Send_Submission(Task):
+class SendSubmission(Task):
 
     """
     Task to load and construct submission and send it off
@@ -66,4 +66,4 @@ class Send_Submission(Task):
                     Celery.',
                 exc_info=True)
 
-send_submission = Send_Submission()
+send_submission = SendSubmission()
