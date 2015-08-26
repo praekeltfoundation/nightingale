@@ -32,6 +32,15 @@ class SubmissionsTestCase(TestCase):
                           sender=Submission,
                           dispatch_uid="ona.post_save.submission")
 
+    def make_user_project(self):
+        project3 = Project.objects.create(
+            code="TESTPROJ3", name="Test Project 3")
+        userproject = UserProject.objects.create(
+            user=self.normaluser)
+        userproject.projects.add(project3)
+        userproject.save()
+        return project3
+
     def setUp(self):
         super(SubmissionsTestCase, self).setUp()
         self._replace_post_save_hooks()
@@ -60,15 +69,6 @@ class TestSubmissions(SubmissionsTestCase):
         )
         ona_integration.save()
         return ona_integration
-
-    def make_user_project(self):
-        project3 = Project.objects.create(
-            code="TESTPROJ3", name="Test Project 3")
-        userproject = UserProject.objects.create(
-            user=self.normaluser)
-        userproject.projects.add(project3)
-        userproject.save()
-        return project3
 
     def make_category(self, name="test cat", order=1):
         category1 = Category.objects.create(
