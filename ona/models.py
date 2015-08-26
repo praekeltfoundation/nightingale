@@ -2,6 +2,8 @@ from django.contrib.postgres.fields import HStoreField
 from django.db import models
 from accounts.models import Integration
 from reports.models import Report
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Submission(models.Model):
@@ -20,14 +22,11 @@ class Submission(models.Model):
     def __str__(self):
         return self.content
 
+
 # send new submissions
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from .tasks import send_submission
-
-
 @receiver(post_save, sender=Submission,
           dispatch_uid="ona.post_save.submission")
 def fire_subm_action_if_undelivered(sender, instance, created, **kwargs):
+    from .tasks import send_submission
     if not instance.submitted:
         send_submission.delay(instance.id)
